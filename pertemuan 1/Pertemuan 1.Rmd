@@ -1,0 +1,151 @@
+---
+title: "Pertemuan 1"
+author: "Natasha Muti Hafiza"
+date: "2023-09-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#install.packages("forecast")
+#install.packages("graphics")
+#install.packages("TTR")
+#install.packages("TSA")
+```
+
+```{r}
+library("forecast")
+library("graphics")
+library("TTR")
+library("TSA")
+```
+
+```{r}
+View(data)
+str(data)
+dim(data)
+```
+
+```{r}
+data.ts <- ts(data$High)
+```
+
+```{r}
+summary(data.ts)
+```
+
+```{r}
+ts.plot(data.ts, xlab="Time Period", ylab="Highest stock price (USD)", 
+        main = "Digital Currency")
+points(data.ts)
+```
+
+```{r}
+#menyimpan plot
+#dev.copy(png, "eksplorasi.png")
+#dev.off()
+```
+
+```{r}
+#membagi data latih dan data uji
+training_data <- data[1:200,]
+testing_data <- data[201:249,]
+train_data.ts <- ts(training_data$High)
+test_data.ts <- ts(testing_data$High)
+```
+
+#EKSPLORASI DATA
+```{r}
+#eksplorasi keseluruhan data
+plot(data.ts, col="pink",main="Plot semua data")
+points(data.ts)
+
+#eksplorasi data latih
+plot(train_data.ts, col="yellow",main="Plot data latih")
+points(train_data.ts)
+
+#eksplorasi data uji
+plot(test_data.ts, col="purple",main="Plot data uji")
+points(test_data.ts)
+```
+
+
+### Metode Pemulusan DES
+
+```{r}
+#Lamda=0.2 dan gamma=0.2
+des.1<- HoltWinters(train_data.ts, gamma = FALSE, beta = 0.2, alpha = 0.2)
+plot(des.1)
+
+#ramalan
+ramalandes1<- forecast(des.1, h=10)
+ramalandes1
+
+#Lamda=0.6 dan gamma=0.3
+des.2<- HoltWinters(train_data.ts, gamma = FALSE, beta = 0.3, alpha = 0.6)
+plot(des.2)
+
+#ramalan
+ramalandes2<- forecast(des.2, h=10)
+ramalandes2
+```
+
+Selanjutnya jika ingin membandingkan plot data latih dan data uji adalah sebagai berikut.
+
+```{r}
+#Visually evaluate the prediction
+plot(data.ts)
+lines(des.1$fitted[,1], lty=2, col="black")
+lines(ramalandes1$mean, col="pink")
+```
+
+Untuk mendapatkan nilai parameter optimum dari DES, argumen `alpha` dan `beta` dapat dibuat `NULL` seperti berikut.
+
+```{r}
+#Lamda dan gamma optimum
+des.opt<- HoltWinters(train_data.ts, gamma = FALSE)
+des.opt
+plot(des.opt)
+
+#ramalan
+ramalandesopt<- forecast(des.opt, h=10)
+ramalandesopt
+```
+
+Selanjutnya akan dilakukan perhitungan akurasi pada data latih maupun data uji dengan ukuran akurasi SSE, MSE dan MAPE.
+
+#### Akurasi Data Latih
+
+```{r}
+#Akurasi Data Training
+ssedes.train1<-des.1$SSE
+msedes.train1<-ssedes.train1/length(train_data.ts)
+sisaandes1<-ramalandes1$residuals
+head(sisaandes1)
+
+mapedes.train1 <- sum(abs(sisaandes1[3:length(train_data.ts)]/train_data.ts[3:length(train_data.ts)])
+                      *100)/length(train_data.ts)
+
+akurasides.1 <- matrix(c(ssedes.train1,msedes.train1,mapedes.train1))
+row.names(akurasides.1)<- c("SSE", "MSE", "MAPE")
+colnames(akurasides.1) <- c("Akurasi lamda=0.2 dan gamma=0.2")
+akurasides.1
+
+ssedes.train2<-des.2$SSE
+msedes.train2<-ssedes.train2/length(train_data.ts)
+sisaandes2<-ramalandes2$residuals
+head(sisaandes2)
+
+mapedes.train2 <- sum(abs(sisaandes2[3:length(train_data.ts)]/train_data.ts[3:length(train_data.ts)])
+                      *100)/length(train_data.ts)
+
+akurasides.2 <- matrix(c(ssedes.train2,msedes.train2,mapedes.train2))
+row.names(akurasides.2)<- c("SSE", "MSE", "MAPE")
+colnames(akurasides.2) <- c("Akurasi lamda=0.6 dan gamma=0.3")
+akurasides.2
+```
+
+Hasil akurasi dari data latih didapatkan skenario 2 dengan lamda=0.6 dan gamma=0.3 memiliki hasil yang lebih baik. Namun untuk kedua skenario dapat dikategorikan peramalan sangat baik berdasarkan nilai MAPE-nya.
