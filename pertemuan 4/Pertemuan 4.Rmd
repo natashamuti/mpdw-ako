@@ -23,7 +23,7 @@ Akan dicoba membangkitkan proses MA paling sederhana, yaitu MA(1) dengan $\theta
 
 ```{r}
 set.seed(1019)
-ma[1] <- wn[1]
+ma <- wn[1]
 ma[2] <- wn[2]
 ```
 
