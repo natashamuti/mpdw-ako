@@ -109,7 +109,7 @@ Berdasarkan uji ADF tersebut, didapat *p-value* sebesar 0.3945 yang lebih besar 
 #### Bagian 2
 
 ```{r}
-dtbag2 <- dt_rg[106:150] |> ts()
+dtbag2 <- data.ts[106:150] |> ts()
 mean(dtbag2)
 var(dtbag2)
 ```
